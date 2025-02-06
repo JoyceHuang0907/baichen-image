@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百辰創新案件實績</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background-color: #003366; /* 深藍色背景 */
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+            color: white; /* 全站文字為白色 */
+        }
+        .title {
+            font-size: 36px; /* 加大標題字體 */
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            background: white;
+            color: black; /* 說明框內文字顏色 */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 1200px;
+            transition: all 0.3s ease;
+        }
+        .chart-container {
+            flex: 1;
+            max-width: 65%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            max-height: 600px;
+        }
+        .data-list {
+            flex: 1;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #003366, #3366cc);
+            color: white;
+            text-align: left;
+            font-size: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 300px;
+        }
+        .data-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .color-box {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .color-box img {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* 手機版（小於 768px 時） */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                width: 95%;
+                padding: 20px;
+            }
+            .chart-container {
+                max-width: 100%;
+            }
+            .data-list {
+                text-align: center;
+                font-size: 18px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title">百辰創新案件實績</div>
+    <div class="container">
+        <div class="chart-container">
+            <canvas id="donutChart"></canvas>
+        </div>
+        <div class="data-list" id="dataList"></div>
+    </div>
+
+    <script>
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                "臺北市都更案件數": params.get("taipei") || 0,
+                "新北市都更案件數": params.get("newtaipei") || 0,
+                "容積移轉案件數": params.get("volume") || 0,
+                "TOD案件數": params.get("tod") || 0,
+                "古蹟容積案件數": params.get("heritage") || 0,
+                "大稻埕容積案件數": params.get("dadaocheng") || 0,
+                "公保地案件數": params.get("public") || 0,
+            };
+        }
+
+        const data = getQueryParams();
+        const labels = Object.keys(data);
+        const values = Object.values(data).map(Number);
+        const totalCases = values.reduce((acc, val) => acc + val, 0); // 計算總案件數
+        const colors = [
+            '#FF6384', // 紅色
+            '#36A2EB', // 藍色
+            '#FFCE56', // 黃色
+            '#4BC0C0', // 綠色
+            '#9966FF', // 紫色
+            '#FF9F40', // 橙色
+            '#556677'  // 深灰藍色（替代原本的灰色）
+        ];
+        const icons = [
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/taipei.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/newtaipei.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/volume.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/tod.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/heritage.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/dadaocheng.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/public.svg'
+        ];
+        
+        // 插件：在圓環圖中心顯示文字
+        const centerTextPlugin = {
+            id: 'centerText',
+            beforeDraw(chart) {
+                const { width } = chart;
+                const { height } = chart;
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = 'bold 24px Poppins';
+                ctx.fillStyle = '#003366'; // 圓心文字顏色
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`總案件數`, width / 2, height / 2 - 20);
+                ctx.fillText(totalCases, width / 2, height / 2 + 20);
+                ctx.restore();
+            }
+        };
+
+        // 創建圓環圖
+        const ctx = document.getElementById('donutChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false } // 隱藏圖例
+                }
+            },
+            plugins: [centerTextPlugin]
+        });
+        
+        // 顯示數據列表
+        const dataList = document.getElementById('dataList');
+        labels.forEach((label, index) => {
+            const item = document.createElement('div');
+            item.classList.add('data-item');
+            item.innerHTML = `
+                <div class="color-box" style="background-color: ${colors[index]}">
+                    <img src="${icons[index]}" alt="${label}">
+                </div>
+                ${label}: ${values[index]}
+            `;
+            dataList.appendChild(item);
+        });
+    </script>
+</body>
+</html>
