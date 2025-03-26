@@ -64,6 +64,12 @@
             justify-content: center;
             min-height: 300px;
         }
+        .data-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
         .data-item {
             display: flex;
             align-items: center;
@@ -107,20 +113,25 @@
         <div class="chart-container">
             <canvas id="donutChart"></canvas>
         </div>
-        <div class="data-list" id="dataList"></div>
+        <div class="data-list">
+            <div class="data-header">案件數</div>
+            <div id="dataList"></div>
+        </div>
     </div>
 
     <script>
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
             return {
-                "臺北市都更案件數": params.get("taipei") || 0,
-                "新北市都更案件數": params.get("newtaipei") || 0,
-                "容積移轉案件數": params.get("volume") || 0,
-                "TOD案件數": params.get("tod") || 0,
-                "古蹟容積案件數": params.get("heritage") || 0,
-                "大稻埕容積案件數": params.get("dadaocheng") || 0,
-                "公保地案件數": params.get("public") || 0,
+                "台北市都市更新": params.get("taipei_urban_renewal") || 0,
+                "新北市都市更新": params.get("newtaipei_urban_renewal") || 0,
+                "台北市公保地雙軌制": params.get("taipei_public_land_dual") || 0,
+                "新北市公保地評點制": params.get("newtaipei_public_land_points") || 0,
+                "古蹟容積移轉": params.get("heritage_transfer") || 0,
+                "大稻埕容積移轉": params.get("dadaocheng_transfer") || 0,
+                "台北市TOD": params.get("taipei_tod") || 0,
+                "新北市TOD增額": params.get("newtaipei_tod_bonus") || 0,
+                "都計變更/非都土地變更": params.get("urban_rural_land_change") || 0
             };
         }
 
@@ -135,16 +146,20 @@
             '#4BC0C0', // 綠色
             '#9966FF', // 紫色
             '#FF9F40', // 橙色
-            '#556677'  // 深灰藍色（替代原本的灰色）
+            '#556677', // 深灰藍色
+            '#2E8B57', // 海綠色
+            '#8B4513'  // 棕色
         ];
         const icons = [
             'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/taipei.svg',
             'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/newtaipei.svg',
-            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/volume.svg',
-            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/tod.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/taipei_public_land_dual.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/newtaipei_public_land_points02.svg',
             'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/heritage.svg',
             'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/dadaocheng.svg',
-            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/public.svg'
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/taipei_tod.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/newtaipei_tod_bonus.svg',
+            'https://raw.githubusercontent.com/JoyceHuang0907/baichen-image/main/urban_rural_land_change.svg'
         ];
         
         // 插件：在圓環圖中心顯示文字
